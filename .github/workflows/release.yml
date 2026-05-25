@@ -41,7 +41,7 @@ jobs:
             deb: false
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -96,14 +96,14 @@ jobs:
           echo "DEB_NAME=sqlv_${VERSION}_${ARCH}.deb" >> $GITHUB_ENV
 
       - name: Upload binary artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.artifact }}
 
       - name: Upload .deb artifact
         if: matrix.deb == true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.DEB_NAME }}
           path: ${{ env.DEB_PATH }}
@@ -116,10 +116,10 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts/
           merge-multiple: true
