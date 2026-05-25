@@ -1,0 +1,153 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact: sqlv-linux-x86_64
+            deb: true
+
+          - name: Linux ARM64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            artifact: sqlv-linux-arm64
+            deb: true
+
+          - name: macOS x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            artifact: sqlv-macos-x86_64
+            deb: false
+
+          - name: macOS Apple Silicon
+            os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: sqlv-macos-arm64
+            deb: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Install musl tools (Linux x86_64)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Rename binary
+        run: |
+          cp target/${{ matrix.target }}/release/sqlv ${{ matrix.artifact }}
+
+      - name: Build .deb package
+        if: matrix.deb == true
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          ARCH=$(echo "${{ matrix.target }}" | grep -q "aarch64" && echo "arm64" || echo "amd64")
+          DEB_DIR=dist/sqlv_${VERSION}_${ARCH}
+          mkdir -p ${DEB_DIR}/usr/bin ${DEB_DIR}/DEBIAN
+          cp ${{ matrix.artifact }} ${DEB_DIR}/usr/bin/sqlv
+          chmod 755 ${DEB_DIR}/usr/bin/sqlv
+          cat > ${DEB_DIR}/DEBIAN/control <<EOF
+          Package: sqlv
+          Version: ${VERSION}
+          Architecture: ${ARCH}
+          Maintainer: ${{ github.repository_owner }}
+          Depends:
+          Section: utils
+          Priority: optional
+          Homepage: https://github.com/${{ github.repository }}
+          Description: A modern terminal SQLite viewer
+           Browse SQLite databases in your terminal with a fast,
+           keyboard-driven TUI. Zero system dependencies.
+          EOF
+          dpkg-deb --build --root-owner-group ${DEB_DIR}
+          echo "DEB_PATH=${DEB_DIR}.deb" >> $GITHUB_ENV
+          echo "DEB_NAME=sqlv_${VERSION}_${ARCH}.deb" >> $GITHUB_ENV
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+      - name: Upload .deb artifact
+        if: matrix.deb == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DEB_NAME }}
+          path: ${{ env.DEB_PATH }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lh artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          generate_release_notes: true
+          body: |
+            ## Install
+
+            ### Linux (apt / dpkg)
+            ```bash
+            # x86_64
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sqlv_${{ github.ref_name }}_amd64.deb
+            sudo dpkg -i sqlv_${{ github.ref_name }}_amd64.deb
+
+            # ARM64
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sqlv_${{ github.ref_name }}_arm64.deb
+            sudo dpkg -i sqlv_${{ github.ref_name }}_arm64.deb
+            ```
+
+            ### macOS
+            ```bash
+            # Apple Silicon
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sqlv-macos-arm64
+            chmod +x sqlv-macos-arm64 && sudo mv sqlv-macos-arm64 /usr/local/bin/sqlv
+
+            # Intel
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sqlv-macos-x86_64
+            chmod +x sqlv-macos-x86_64 && sudo mv sqlv-macos-x86_64 /usr/local/bin/sqlv
+            ```

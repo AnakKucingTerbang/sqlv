@@ -1,0 +1,21 @@
+[package]
+name        = "sqlv"
+version     = "1.0.0"
+edition     = "2021"
+description = "A modern terminal SQLite viewer"
+license     = "MIT"
+
+[[bin]]
+name = "sqlv"
+path = "src/main.rs"
+
+[dependencies]
+ratatui    = "0.27"
+crossterm  = "0.27"
+rusqlite   = { version = "0.31", features = ["bundled"] }
+anyhow     = "1"
+
+[profile.release]
+opt-level = 3
+strip     = true
+lto       = true
