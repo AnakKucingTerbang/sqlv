@@ -36,14 +36,14 @@ A modern, zero-dependency terminal SQLite viewer written in Rust. Browse tables 
 ### apt (Ubuntu / Debian)
 
 ```bash
-curl -s https://packagecloud.io/install/repositories/YOURNAME/sqlv/script.deb.sh | sudo bash
+curl -s https://packagecloud.io/install/repositories/AnakKucingTerbang/sqlv/script.deb.sh | sudo bash
 sudo apt-get install sqlv
 ```
 
 ### From a .deb directly
 
 ```bash
-curl -LO https://github.com/YOURNAME/sqlv/releases/latest/download/sqlv_1.0.0_amd64.deb
+curl -LO https://github.com/AnakKucingTerbang/sqlv/releases/latest/download/sqlv_1.0.0_amd64.deb
 sudo dpkg -i sqlv_1.0.0_amd64.deb
 ```
 
@@ -51,11 +51,11 @@ sudo dpkg -i sqlv_1.0.0_amd64.deb
 
 ```bash
 # Apple Silicon
-curl -LO https://github.com/YOURNAME/sqlv/releases/latest/download/sqlv-macos-arm64
+curl -LO https://github.com/AnakKucingTerbang/sqlv/releases/latest/download/sqlv-macos-arm64
 chmod +x sqlv-macos-arm64 && sudo mv sqlv-macos-arm64 /usr/local/bin/sqlv
 
 # Intel
-curl -LO https://github.com/YOURNAME/sqlv/releases/latest/download/sqlv-macos-x86_64
+curl -LO https://github.com/AnakKucingTerbang/sqlv/releases/latest/download/sqlv-macos-x86_64
 chmod +x sqlv-macos-x86_64 && sudo mv sqlv-macos-x86_64 /usr/local/bin/sqlv
 ```
 
@@ -143,7 +143,7 @@ sqlv has two modes shown in the status bar:
 Add sqlv to your Dockerfile for production debugging:
 
 ```dockerfile
-RUN curl -s https://packagecloud.io/install/repositories/YOURNAME/sqlv/script.deb.sh | bash \
+RUN curl -s https://packagecloud.io/install/repositories/AnakKucingTerbang/sqlv/script.deb.sh | bash \
     && apt-get install -y sqlv
 ```
 
