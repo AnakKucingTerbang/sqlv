@@ -830,7 +830,7 @@ fn draw_table_inner(
         .collect();
 
     let overflow = col_count.saturating_sub(col_offset + visible.len());
-    let overflow_hint = if col_offset > 0 || overflow > 0 {
+    let _overflow_hint = if col_offset > 0 || overflow > 0 {
         format!(
             "{}{}",
             if col_offset > 0 { "← " } else { "" },
