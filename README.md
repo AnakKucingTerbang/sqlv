@@ -1,6 +1,6 @@
 # sqlv
 
-A modern, zero-dependency terminal SQLite viewer written in Rust. Browse tables or run SELECT queries — all from your terminal.
+A modern, zero-dependency terminal SQLite viewer written in Rust. Single static binary you can drop into any docker container with one line, no runtime needed.
 
 ```
 ┌─────────────────────────┬───────────────────────────────────────────────────┐
