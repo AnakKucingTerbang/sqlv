@@ -143,8 +143,17 @@ sqlv has two modes shown in the status bar:
 Add sqlv to your Dockerfile for production debugging:
 
 ```dockerfile
-RUN curl -s https://packagecloud.io/install/repositories/AnakKucingTerbang/sqlv/script.deb.sh | bash \
-    && apt-get install -y sqlv
+RUN curl -LO https://github.com/AnakKucingTerbang/sqlv/releases/latest/download/sqlv-linux-x86_64 \
+    && chmod +x sqlv-linux-x86_64 \
+    && mv sqlv-linux-x86_64 /usr/local/bin/sqlv
+```
+
+For ARM64 containers (Apple Silicon, Graviton, etc.):
+
+```dockerfile
+RUN curl -LO https://github.com/AnakKucingTerbang/sqlv/releases/latest/download/sqlv-linux-arm64 \
+    && chmod +x sqlv-linux-arm64 \
+    && mv sqlv-linux-arm64 /usr/local/bin/sqlv
 ```
 
 Then inspect a running container:
